@@ -320,6 +320,7 @@ const KeyManagement: React.FC = () => {
                             <AlertDialogCancel>Отмена</AlertDialogCancel>
                             <AlertDialogAction
                               onClick={() => deleteKey(key.id)}
+                              className="bg-red-600 hover:bg-red-700"
                             >
                               Удалить
                             </AlertDialogAction>

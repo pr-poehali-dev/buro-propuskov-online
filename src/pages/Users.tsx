@@ -59,6 +59,9 @@ const Users = () => {
       role: "admin",
       status: "active",
       keysIssued: 2,
+      barcode: "1234567890",
+      login: "ivanov",
+      password: "pass123",
     },
     {
       id: "2",
@@ -68,6 +71,9 @@ const Users = () => {
       role: "manager",
       status: "active",
       keysIssued: 1,
+      barcode: "0987654321",
+      login: "petrova",
+      password: "pass456",
     },
     {
       id: "3",
@@ -77,6 +83,9 @@ const Users = () => {
       role: "employee",
       status: "active",
       keysIssued: 0,
+      barcode: "1122334455",
+      login: "sidorov",
+      password: "pass789",
     },
     {
       id: "4",
@@ -86,16 +95,46 @@ const Users = () => {
       role: "employee",
       status: "inactive",
       keysIssued: 1,
+      barcode: "5566778899",
+      login: "kozlova",
+      password: "pass000",
     },
   ]);
 
   const { isSaving, lastSaved, saveUsers } = useSaveData();
+  const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 
   const deleteUser = (userId: string) => {
-    setUsers(users.filter((user) => user.id !== userId));
+    const updatedUsers = users.filter((user) => user.id !== userId);
+    setUsers(updatedUsers);
+  };
+
+  const editUser = (user: User) => {
+    setEditingUser(user);
+    setIsEditDialogOpen(true);
+  };
+
+  const updateUser = (updatedUser: User) => {
+    setUsers(
+      users.map((user) => (user.id === updatedUser.id ? updatedUser : user)),
+    );
+    setIsEditDialogOpen(false);
+    setEditingUser(null);
+  };
+
+  const createUser = (newUserData: Omit<User, "id">) => {
+    const newUser: User = {
+      ...newUserData,
+      id: Date.now().toString(),
+    };
+    setUsers([...users, newUser]);
+    setIsCreateDialogOpen(false);
   };
 
   const form = useForm();
+  const editForm = useForm();
 
   const getRoleColor = (role: string) => {
     switch (role) {
@@ -150,19 +189,37 @@ const Users = () => {
               isSaving={isSaving}
               lastSaved={lastSaved}
             />
-            <Dialog>
+            <Dialog
+              open={isCreateDialogOpen}
+              onOpenChange={setIsCreateDialogOpen}
+            >
               <DialogTrigger asChild>
                 <Button className="flex items-center space-x-2">
                   <Icon name="UserPlus" size={16} />
                   <span>Добавить пользователя</span>
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-md">
+              <DialogContent className="max-w-md max-h-[80vh] overflow-y-auto">
                 <DialogHeader>
                   <DialogTitle>Создать нового пользователя</DialogTitle>
                 </DialogHeader>
                 <Form {...form}>
-                  <form className="space-y-4">
+                  <form
+                    className="space-y-4"
+                    onSubmit={form.handleSubmit((data) => {
+                      createUser({
+                        name: data.name,
+                        email: data.email,
+                        department: data.department,
+                        role: data.role,
+                        status: "active",
+                        keysIssued: 0,
+                        barcode: data.barcode,
+                        login: data.login,
+                        password: data.password,
+                      });
+                    })}
+                  >
                     <FormField
                       name="name"
                       render={({ field }) => (
@@ -172,6 +229,7 @@ const Users = () => {
                             <Input
                               placeholder="Введите полное имя"
                               {...field}
+                              required
                             />
                           </FormControl>
                         </FormItem>
@@ -187,6 +245,44 @@ const Users = () => {
                               type="email"
                               placeholder="user@company.ru"
                               {...field}
+                              required
+                            />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      name="barcode"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Штрихкод</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Введите штрихкод" {...field} />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      name="login"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Логин</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Введите логин" {...field} />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      name="password"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Пароль</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="password"
+                              placeholder="Введите пароль"
+                              {...field}
                             />
                           </FormControl>
                         </FormItem>
@@ -200,6 +296,7 @@ const Users = () => {
                           <Select
                             onValueChange={field.onChange}
                             defaultValue={field.value}
+                            required
                           >
                             <FormControl>
                               <SelectTrigger>
@@ -207,12 +304,12 @@ const Users = () => {
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              <SelectItem value="it">IT-отдел</SelectItem>
-                              <SelectItem value="hr">HR</SelectItem>
-                              <SelectItem value="accounting">
+                              <SelectItem value="IT">IT-отдел</SelectItem>
+                              <SelectItem value="HR">HR</SelectItem>
+                              <SelectItem value="Бухгалтерия">
                                 Бухгалтерия
                               </SelectItem>
-                              <SelectItem value="security">Охрана</SelectItem>
+                              <SelectItem value="Охрана">Охрана</SelectItem>
                             </SelectContent>
                           </Select>
                         </FormItem>
@@ -226,6 +323,7 @@ const Users = () => {
                           <Select
                             onValueChange={field.onChange}
                             defaultValue={field.value}
+                            required
                           >
                             <FormControl>
                               <SelectTrigger>
@@ -254,6 +352,187 @@ const Users = () => {
             </Dialog>
           </div>
         </div>
+
+        {/* Диалог редактирования пользователя */}
+        <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+          <DialogContent className="max-w-md max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Редактировать пользователя</DialogTitle>
+            </DialogHeader>
+            {editingUser && (
+              <Form {...editForm}>
+                <form
+                  className="space-y-4"
+                  onSubmit={editForm.handleSubmit((data) => {
+                    updateUser({
+                      ...editingUser,
+                      name: data.name || editingUser.name,
+                      email: data.email || editingUser.email,
+                      department: data.department || editingUser.department,
+                      role: data.role || editingUser.role,
+                      status: data.status || editingUser.status,
+                      barcode: data.barcode || editingUser.barcode,
+                      login: data.login || editingUser.login,
+                      password: data.password || editingUser.password,
+                    });
+                  })}
+                >
+                  <FormField
+                    name="name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>ФИО</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="Введите полное имя"
+                            defaultValue={editingUser.name}
+                            {...field}
+                          />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Email</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="email"
+                            placeholder="user@company.ru"
+                            defaultValue={editingUser.email}
+                            {...field}
+                          />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    name="barcode"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Штрихкод</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="Введите штрихкод"
+                            defaultValue={editingUser.barcode}
+                            {...field}
+                          />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    name="login"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Логин</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="Введите логин"
+                            defaultValue={editingUser.login}
+                            {...field}
+                          />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    name="password"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Пароль</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="password"
+                            placeholder="Введите пароль"
+                            defaultValue={editingUser.password}
+                            {...field}
+                          />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    name="department"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Отдел</FormLabel>
+                        <Select
+                          onValueChange={field.onChange}
+                          defaultValue={editingUser.department}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Выберите отдел" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="IT">IT-отдел</SelectItem>
+                            <SelectItem value="HR">HR</SelectItem>
+                            <SelectItem value="Бухгалтерия">
+                              Бухгалтерия
+                            </SelectItem>
+                            <SelectItem value="Охрана">Охрана</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    name="role"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Роль</FormLabel>
+                        <Select
+                          onValueChange={field.onChange}
+                          defaultValue={editingUser.role}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Выберите роль" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="employee">Сотрудник</SelectItem>
+                            <SelectItem value="manager">Менеджер</SelectItem>
+                            <SelectItem value="admin">Администратор</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    name="status"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Статус</FormLabel>
+                        <Select
+                          onValueChange={field.onChange}
+                          defaultValue={editingUser.status}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Выберите статус" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="active">Активен</SelectItem>
+                            <SelectItem value="inactive">Неактивен</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </FormItem>
+                    )}
+                  />
+                  <Button type="submit" className="w-full">
+                    Сохранить изменения
+                  </Button>
+                </form>
+              </Form>
+            )}
+          </DialogContent>
+        </Dialog>
 
         <Card>
           <CardHeader>
@@ -304,7 +583,11 @@ const Users = () => {
                     </TableCell>
                     <TableCell>
                       <div className="flex space-x-2">
-                        <Button size="sm" variant="outline">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => editUser(user)}
+                        >
                           <Icon name="Edit" size={14} />
                         </Button>
                         <AlertDialog>
@@ -327,6 +610,7 @@ const Users = () => {
                               <AlertDialogCancel>Отмена</AlertDialogCancel>
                               <AlertDialogAction
                                 onClick={() => deleteUser(user.id)}
+                                className="bg-red-600 hover:bg-red-700"
                               >
                                 Удалить
                               </AlertDialogAction>

@@ -8,6 +8,9 @@ export interface User {
   role: "admin" | "manager" | "employee";
   status: "active" | "inactive";
   keysIssued: number;
+  barcode?: string;
+  login?: string;
+  password?: string;
 }
 
 export interface KeyRecord {
