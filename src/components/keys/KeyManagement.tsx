@@ -61,6 +61,32 @@ const KeyManagement: React.FC = () => {
 
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [searchTerm, setSearchTerm] = useState("");
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [newKeyOffice, setNewKeyOffice] = useState("");
+  const [newKeyDepartment, setNewKeyDepartment] = useState("");
+
+  const departmentLabels: Record<string, string> = {
+    it: "IT-отдел",
+    hr: "HR",
+    accounting: "Бухгалтерия",
+    security: "Охрана",
+  };
+
+  const addKey = () => {
+    if (!newKeyOffice.trim() || !newKeyDepartment) return;
+
+    const newKey: KeyRecord = {
+      id: Date.now().toString(),
+      office: newKeyOffice.trim(),
+      status: "available",
+      department: departmentLabels[newKeyDepartment],
+    };
+
+    setKeys((prev) => [...prev, newKey]);
+    setNewKeyOffice("");
+    setNewKeyDepartment("");
+    setIsDialogOpen(false);
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -157,7 +183,7 @@ const KeyManagement: React.FC = () => {
               <Icon name="Key" size={20} />
               <span>Управление ключами</span>
             </CardTitle>
-            <Dialog>
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
                 <Button className="flex items-center space-x-2">
                   <Icon name="Plus" size={16} />
@@ -169,8 +195,15 @@ const KeyManagement: React.FC = () => {
                   <DialogTitle>Добавить новый ключ</DialogTitle>
                 </DialogHeader>
                 <div className="space-y-4">
-                  <Input placeholder="Номер кабинета" />
-                  <Select>
+                  <Input
+                    placeholder="Номер кабинета"
+                    value={newKeyOffice}
+                    onChange={(e) => setNewKeyOffice(e.target.value)}
+                  />
+                  <Select
+                    value={newKeyDepartment}
+                    onValueChange={setNewKeyDepartment}
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Выберите отдел" />
                     </SelectTrigger>
@@ -181,7 +214,13 @@ const KeyManagement: React.FC = () => {
                       <SelectItem value="security">Охрана</SelectItem>
                     </SelectContent>
                   </Select>
-                  <Button className="w-full">Добавить ключ</Button>
+                  <Button
+                    className="w-full"
+                    onClick={addKey}
+                    disabled={!newKeyOffice.trim() || !newKeyDepartment}
+                  >
+                    Добавить ключ
+                  </Button>
                 </div>
               </DialogContent>
             </Dialog>
