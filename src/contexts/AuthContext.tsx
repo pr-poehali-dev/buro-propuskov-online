@@ -57,17 +57,36 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           },
         ];
 
-    // Фильтруем пользователей по роли при необходимости
-    const filteredUsers = isAdmin
-      ? users.filter((u) => u.role === "admin")
-      : users;
+    // Специальная проверка для администратора
+    if (isAdmin) {
+      // Проверяем стандартные админские учетные данные
+      if (loginData === "admin" && password === "admin") {
+        const adminUser = users.find((u) => u.role === "admin") || {
+          id: "1",
+          name: "Администратор",
+          email: "admin@company.ru",
+          department: "Администрация",
+          role: "admin",
+          status: "active",
+          keysIssued: 0,
+          barcode: "ADMIN001",
+          login: "admin",
+          password: "admin",
+        };
+        setCurrentUser(adminUser);
+        localStorage.setItem("current_user", JSON.stringify(adminUser));
+        return true;
+      }
+      return false;
+    }
 
-    // Ищем пользователя по логину или email
-    const user = filteredUsers.find(
+    // Обычная проверка для сотрудников
+    const user = users.find(
       (u) =>
         (u.login === loginData || u.email === loginData) &&
         u.password === password &&
-        u.status === "active",
+        u.status === "active" &&
+        u.role !== "admin",
     );
 
     if (user) {
