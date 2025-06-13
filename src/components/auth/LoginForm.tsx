@@ -18,6 +18,7 @@ const LoginForm = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isAdminMode, setIsAdminMode] = useState(false);
   const { login: authLogin } = useAuth();
   const navigate = useNavigate();
 
@@ -27,11 +28,15 @@ const LoginForm = () => {
     setIsLoading(true);
 
     try {
-      const success = authLogin(login, password);
+      const success = authLogin(login, password, isAdminMode);
       if (success) {
         navigate("/dashboard");
       } else {
-        setError("Неверный логин или пароль");
+        setError(
+          isAdminMode
+            ? "Неверные данные администратора"
+            : "Неверный логин или пароль",
+        );
       }
     } catch (err) {
       setError("Ошибка входа в систему");
@@ -53,6 +58,35 @@ const LoginForm = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
+          <div className="mb-6">
+            <div className="flex items-center justify-center space-x-4">
+              <button
+                type="button"
+                onClick={() => setIsAdminMode(false)}
+                className={`px-4 py-2 rounded-lg transition-colors ${
+                  !isAdminMode
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                }`}
+              >
+                <Icon name="User" className="mr-2 h-4 w-4 inline" />
+                Сотрудник
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsAdminMode(true)}
+                className={`px-4 py-2 rounded-lg transition-colors ${
+                  isAdminMode
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                }`}
+              >
+                <Icon name="ShieldCheck" className="mr-2 h-4 w-4 inline" />
+                Администратор
+              </button>
+            </div>
+          </div>
+
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="login">Логин или Email</Label>
@@ -95,6 +129,16 @@ const LoginForm = () => {
               )}
             </Button>
           </form>
+
+          <div className="mt-4 text-center">
+            <button
+              type="button"
+              onClick={() => navigate("/forgot-password")}
+              className="text-sm text-primary hover:underline"
+            >
+              Забыли пароль?
+            </button>
+          </div>
 
           <div className="mt-6 text-center text-sm text-gray-600">
             <p>Тестовые данные для входа:</p>

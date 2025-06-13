@@ -12,6 +12,7 @@ import Scanner from "./pages/Scanner";
 import Keys from "./pages/Keys";
 import Users from "./pages/Users";
 import Offices from "./pages/Offices";
+import ForgotPassword from "./pages/ForgotPassword";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -25,6 +26,7 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/login" element={<Login />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route
               path="/"
               element={
