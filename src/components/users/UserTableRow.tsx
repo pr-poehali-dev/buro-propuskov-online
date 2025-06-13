@@ -53,6 +53,18 @@ const UserTableRow: React.FC<UserTableRowProps> = ({
       </TableCell>
       <TableCell>
         <div className="flex space-x-2">
+          <Button
+            size="sm"
+            variant="default"
+            onClick={() => {
+              localStorage.setItem("currentUser", JSON.stringify(user));
+              window.dispatchEvent(new Event("userChanged"));
+            }}
+            className="flex items-center space-x-1"
+          >
+            <Icon name="UserCheck" size={14} />
+            <span className="hidden sm:inline">Войти</span>
+          </Button>
           <Button size="sm" variant="outline" onClick={() => onEdit(user)}>
             <Icon name="Edit" size={14} />
           </Button>

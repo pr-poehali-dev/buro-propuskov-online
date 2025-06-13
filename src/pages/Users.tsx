@@ -8,6 +8,7 @@ import { useForm } from "react-hook-form";
 import { useSaveData, User } from "@/hooks/useSaveData";
 import UserTable from "@/components/users/UserTable";
 import UserFormDialog from "@/components/users/UserFormDialog";
+import CurrentUserDisplay from "@/components/users/CurrentUserDisplay";
 
 const Users = () => {
   const [users, setUsers] = useState<User[]>([
@@ -151,6 +152,8 @@ const Users = () => {
             </Button>
           </div>
         </div>
+
+        <CurrentUserDisplay />
 
         <UserFormDialog
           open={isEditDialogOpen}
