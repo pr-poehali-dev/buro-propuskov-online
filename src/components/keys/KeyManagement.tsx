@@ -66,7 +66,11 @@ const KeyManagement: React.FC = () => {
   const { isSaving, lastSaved, saveKeys } = useSaveData();
 
   const deleteKey = (keyId: string) => {
-    setKeys(keys.filter((key) => key.id !== keyId));
+    const updatedKeys = keys.filter((key) => key.id !== keyId);
+    setKeys(updatedKeys);
+    // Также удаляем из localStorage
+    const { deleteKey: deleteKeyFromStorage } = useSaveData();
+    deleteKeyFromStorage(keyId);
   };
 
   const [filterStatus, setFilterStatus] = useState<string>("all");
