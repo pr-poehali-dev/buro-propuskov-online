@@ -40,7 +40,11 @@ import {
 } from "@/components/ui/select";
 import Icon from "@/components/ui/icon";
 
-const KeyManagement: React.FC = () => {
+interface KeyManagementProps {
+  isManager?: boolean;
+}
+
+const KeyManagement: React.FC<KeyManagementProps> = ({ isManager = false }) => {
   const [keys, setKeys] = useState<KeyRecord[]>(() => {
     const savedKeys = localStorage.getItem("keys_data");
     return savedKeys
@@ -93,11 +97,22 @@ const KeyManagement: React.FC = () => {
   const addKey = () => {
     if (!newKeyOffice.trim() || !newKeyDepartment) return;
 
+    // Генерируем штрихкод автоматически
+    const generateBarcode = () => {
+      const prefix = "KEY";
+      const timestamp = Date.now().toString().slice(-8);
+      const random = Math.floor(Math.random() * 1000)
+        .toString()
+        .padStart(3, "0");
+      return `${prefix}${timestamp}${random}`;
+    };
+
     const newKey: KeyRecord = {
       id: Date.now().toString(),
       office: newKeyOffice.trim(),
       status: "available",
       department: departmentLabels[newKeyDepartment],
+      barcode: generateBarcode(),
     };
 
     const updatedKeys = [...keys, newKey];
@@ -145,11 +160,58 @@ const KeyManagement: React.FC = () => {
     return matchesSearch && matchesStatus;
   });
 
+  // Проверяем роль пользователя
+  const currentUser = JSON.parse(localStorage.getItem("current_user") || "{}");
+  const isManager = currentUser.role === "manager";
+
   const stats = {
     total: keys.length,
     available: keys.filter((k) => k.status === "available").length,
     issued: keys.filter((k) => k.status === "issued").length,
     lost: keys.filter((k) => k.status === "lost").length,
+  };
+
+  // Функция выдачи ключа
+  const [issueDialogOpen, setIssueDialogOpen] = useState(false);
+  const [selectedKey, setSelectedKey] = useState<KeyRecord | null>(null);
+  const [recipientName, setRecipientName] = useState("");
+
+  const issueKey = () => {
+    if (!selectedKey || !recipientName.trim()) return;
+
+    const updatedKeys = keys.map((key) =>
+      key.id === selectedKey.id
+        ? {
+            ...key,
+            status: "issued" as const,
+            issuedTo: recipientName.trim(),
+            issuedAt: new Date().toLocaleDateString("ru-RU"),
+          }
+        : key,
+    );
+
+    setKeys(updatedKeys);
+    localStorage.setItem("keys_data", JSON.stringify(updatedKeys));
+    setIssueDialogOpen(false);
+    setSelectedKey(null);
+    setRecipientName("");
+  };
+
+  // Функция возврата ключа
+  const returnKey = (keyId: string) => {
+    const updatedKeys = keys.map((key) =>
+      key.id === keyId
+        ? {
+            ...key,
+            status: "available" as const,
+            issuedTo: undefined,
+            issuedAt: undefined,
+          }
+        : key,
+    );
+
+    setKeys(updatedKeys);
+    localStorage.setItem("keys_data", JSON.stringify(updatedKeys));
   };
 
   return (
@@ -202,55 +264,66 @@ const KeyManagement: React.FC = () => {
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center space-x-2">
               <Icon name="Key" size={20} />
-              <span>Управление ключами</span>
+              <span>
+                {isManager ? "Выдача ключей и карт" : "Управление ключами"}
+              </span>
             </CardTitle>
             <div className="flex items-center space-x-4">
-              <SaveButton
-                onSave={() => saveKeys(keys)}
-                isSaving={isSaving}
-                lastSaved={lastSaved}
-              />
-              <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                <DialogTrigger asChild>
-                  <Button className="flex items-center space-x-2">
-                    <Icon name="Plus" size={16} />
-                    <span>Добавить ключ</span>
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Добавить новый ключ</DialogTitle>
-                  </DialogHeader>
-                  <div className="space-y-4">
-                    <Input
-                      placeholder="Номер кабинета"
-                      value={newKeyOffice}
-                      onChange={(e) => setNewKeyOffice(e.target.value)}
-                    />
-                    <Select
-                      value={newKeyDepartment}
-                      onValueChange={setNewKeyDepartment}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Выберите отдел" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="it">IT-отдел</SelectItem>
-                        <SelectItem value="hr">HR</SelectItem>
-                        <SelectItem value="accounting">Бухгалтерия</SelectItem>
-                        <SelectItem value="security">Охрана</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <Button
-                      className="w-full"
-                      onClick={addKey}
-                      disabled={!newKeyOffice.trim() || !newKeyDepartment}
-                    >
-                      Добавить ключ
+              {!isManager && (
+                <SaveButton
+                  onSave={() => saveKeys(keys)}
+                  isSaving={isSaving}
+                  lastSaved={lastSaved}
+                />
+              )}
+              {!isManager && (
+                <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button className="flex items-center space-x-2">
+                      <Icon name="Plus" size={16} />
+                      <span>Добавить ключ</span>
                     </Button>
-                  </div>
-                </DialogContent>
-              </Dialog>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Добавить новый ключ</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      <Input
+                        placeholder="Номер кабинета"
+                        value={newKeyOffice}
+                        onChange={(e) => setNewKeyOffice(e.target.value)}
+                      />
+                      <Select
+                        value={newKeyDepartment}
+                        onValueChange={setNewKeyDepartment}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Выберите отдел" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="it">IT-отдел</SelectItem>
+                          <SelectItem value="hr">HR</SelectItem>
+                          <SelectItem value="accounting">
+                            Бухгалтерия
+                          </SelectItem>
+                          <SelectItem value="security">Охрана</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <div className="text-sm text-gray-500">
+                        Штрихкод будет присвоен автоматически
+                      </div>
+                      <Button
+                        className="w-full"
+                        onClick={addKey}
+                        disabled={!newKeyOffice.trim() || !newKeyDepartment}
+                      >
+                        Добавить ключ
+                      </Button>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              )}
             </div>
           </div>
         </CardHeader>
@@ -280,6 +353,7 @@ const KeyManagement: React.FC = () => {
             <TableHeader>
               <TableRow>
                 <TableHead>Кабинет</TableHead>
+                <TableHead>Штрихкод</TableHead>
                 <TableHead>Отдел</TableHead>
                 <TableHead>Статус</TableHead>
                 <TableHead>Выдан</TableHead>
@@ -293,6 +367,9 @@ const KeyManagement: React.FC = () => {
                   <TableCell className="font-medium">
                     Каб. {key.office}
                   </TableCell>
+                  <TableCell className="font-mono text-sm">
+                    {key.barcode || "—"}
+                  </TableCell>
                   <TableCell>{key.department}</TableCell>
                   <TableCell>
                     <Badge variant={getStatusColor(key.status) as any}>
@@ -304,46 +381,95 @@ const KeyManagement: React.FC = () => {
                   <TableCell>
                     <div className="flex space-x-2">
                       {key.status === "available" && (
-                        <Button size="sm" variant="outline">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            setSelectedKey(key);
+                            setIssueDialogOpen(true);
+                          }}
+                        >
                           <Icon name="UserPlus" size={14} />
                         </Button>
                       )}
                       {key.status === "issued" && (
-                        <Button size="sm" variant="outline">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => returnKey(key.id)}
+                        >
                           <Icon name="RotateCcw" size={14} />
                         </Button>
                       )}
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button size="sm" variant="destructive">
-                            <Icon name="Trash2" size={14} />
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Удалить ключ?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              Это действие нельзя отменить. Ключ от кабинета{" "}
-                              {key.office} будет удален навсегда.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Отмена</AlertDialogCancel>
-                            <AlertDialogAction
-                              onClick={() => deleteKey(key.id)}
-                              className="bg-red-600 hover:bg-red-700"
-                            >
-                              Удалить
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
+                      {!isManager && (
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button size="sm" variant="destructive">
+                              <Icon name="Trash2" size={14} />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Удалить ключ?</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Это действие нельзя отменить. Ключ от кабинета{" "}
+                                {key.office} будет удален навсегда.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Отмена</AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={() => deleteKey(key.id)}
+                                className="bg-red-600 hover:bg-red-700"
+                              >
+                                Удалить
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      )}
                     </div>
                   </TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
+
+          {/* Диалог выдачи ключа */}
+          <Dialog open={issueDialogOpen} onOpenChange={setIssueDialogOpen}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Выдать ключ</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                {selectedKey && (
+                  <div className="p-4 bg-gray-50 rounded-lg">
+                    <div className="text-sm font-medium">
+                      Ключ от кабинета {selectedKey.office}
+                    </div>
+                    <div className="text-sm text-gray-600">
+                      Штрихкод: {selectedKey.barcode}
+                    </div>
+                    <div className="text-sm text-gray-600">
+                      Отдел: {selectedKey.department}
+                    </div>
+                  </div>
+                )}
+                <Input
+                  placeholder="ФИО получателя"
+                  value={recipientName}
+                  onChange={(e) => setRecipientName(e.target.value)}
+                />
+                <Button
+                  className="w-full"
+                  onClick={issueKey}
+                  disabled={!recipientName.trim()}
+                >
+                  Выдать ключ
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
         </CardContent>
       </Card>
     </div>

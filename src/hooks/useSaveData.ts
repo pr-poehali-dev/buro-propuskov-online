@@ -17,9 +17,10 @@ export interface KeyRecord {
   id: string;
   office: string;
   status: "available" | "issued" | "lost";
+  department: string;
+  barcode?: string;
   issuedTo?: string;
   issuedAt?: string;
-  department: string;
 }
 
 export const useSaveData = () => {
