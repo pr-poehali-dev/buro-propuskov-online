@@ -16,7 +16,9 @@ const Navigation = () => {
     { path: "/", label: "Дашборд", icon: "BarChart3" },
     { path: "/scanner", label: "Сканер", icon: "QrCode" },
     { path: "/keys", label: "Ключи", icon: "Key" },
-    { path: "/users", label: "Пользователи", icon: "Users" },
+    ...(currentUser?.role === "admin"
+      ? [{ path: "/users", label: "Пользователи", icon: "Users" }]
+      : []),
     { path: "/offices", label: "Кабинеты", icon: "Building" },
   ];
 
