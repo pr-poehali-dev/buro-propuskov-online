@@ -162,8 +162,8 @@ const KeyManagement: React.FC<KeyManagementProps> = ({
     return matchesSearch && matchesStatus;
   });
 
-  // Проверяем роль пользователя
-  const isManager = userRole === "manager";
+  // Проверяем роль пользователя - администратор и менеджер могут добавлять ключи
+  const canAddKeys = userRole === "admin" || userRole === "manager";
 
   const stats = {
     total: keys.length,
