@@ -58,6 +58,20 @@ export const useSaveData = () => {
     return data ? JSON.parse(data) : [];
   };
 
+  const deleteUser = (userId: string) => {
+    const users = loadUsers();
+    const updatedUsers = users.filter((user) => user.id !== userId);
+    localStorage.setItem("users_data", JSON.stringify(updatedUsers));
+    return updatedUsers;
+  };
+
+  const deleteKey = (keyId: string) => {
+    const keys = loadKeys();
+    const updatedKeys = keys.filter((key) => key.id !== keyId);
+    localStorage.setItem("keys_data", JSON.stringify(updatedKeys));
+    return updatedKeys;
+  };
+
   return {
     isSaving,
     lastSaved,
@@ -65,5 +79,7 @@ export const useSaveData = () => {
     saveKeys,
     loadUsers,
     loadKeys,
+    deleteUser,
+    deleteKey,
   };
 };
