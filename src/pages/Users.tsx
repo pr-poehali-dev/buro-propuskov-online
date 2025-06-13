@@ -20,6 +20,17 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -85,6 +96,10 @@ const Users = () => {
       keysIssued: 1,
     },
   ]);
+
+  const deleteUser = (userId: string) => {
+    setUsers(users.filter((user) => user.id !== userId));
+  };
 
   const form = useForm();
 
@@ -284,9 +299,32 @@ const Users = () => {
                         <Button size="sm" variant="outline">
                           <Icon name="Edit" size={14} />
                         </Button>
-                        <Button size="sm" variant="ghost">
-                          <Icon name="MoreHorizontal" size={14} />
-                        </Button>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button size="sm" variant="destructive">
+                              <Icon name="Trash2" size={14} />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>
+                                Удалить пользователя?
+                              </AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Это действие нельзя отменить. Пользователь{" "}
+                                {user.name} будет удален навсегда.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Отмена</AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={() => deleteUser(user.id)}
+                              >
+                                Удалить
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
                       </div>
                     </TableCell>
                   </TableRow>

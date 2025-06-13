@@ -17,6 +17,17 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -58,6 +69,10 @@ const KeyManagement: React.FC = () => {
     { id: "4", office: "410", status: "available", department: "HR" },
     { id: "5", office: "101", status: "lost", department: "Охрана" },
   ]);
+
+  const deleteKey = (keyId: string) => {
+    setKeys(keys.filter((key) => key.id !== keyId));
+  };
 
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [searchTerm, setSearchTerm] = useState("");
@@ -285,9 +300,30 @@ const KeyManagement: React.FC = () => {
                           <Icon name="RotateCcw" size={14} />
                         </Button>
                       )}
-                      <Button size="sm" variant="ghost">
-                        <Icon name="MoreHorizontal" size={14} />
-                      </Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button size="sm" variant="destructive">
+                            <Icon name="Trash2" size={14} />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Удалить ключ?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Это действие нельзя отменить. Ключ от кабинета{" "}
+                              {key.office} будет удален навсегда.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Отмена</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => deleteKey(key.id)}
+                            >
+                              Удалить
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     </div>
                   </TableCell>
                 </TableRow>
