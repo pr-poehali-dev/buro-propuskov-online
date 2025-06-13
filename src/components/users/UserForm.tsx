@@ -23,6 +23,7 @@ interface UserFormProps {
   onSubmit: (data: any) => void;
   submitText: string;
   defaultValues?: User;
+  isManager?: boolean; // Добавляем проп для проверки роли
 }
 
 const UserForm: React.FC<UserFormProps> = ({
@@ -30,7 +31,14 @@ const UserForm: React.FC<UserFormProps> = ({
   onSubmit,
   submitText,
   defaultValues,
+  isManager = false,
 }) => {
+  // Проверяем роль текущего пользователя
+  const currentUser = JSON.parse(localStorage.getItem("current_user") || "{}");
+  const userIsManager =
+    currentUser.role === "manager" || currentUser.role === "admin";
+  const canEdit = isManager || userIsManager;
+
   return (
     <Form {...form}>
       <form className="space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
@@ -43,6 +51,7 @@ const UserForm: React.FC<UserFormProps> = ({
                 <Input
                   placeholder="Введите полное имя"
                   defaultValue={defaultValues?.name}
+                  disabled={!canEdit}
                   {...field}
                   required
                 />
@@ -61,6 +70,7 @@ const UserForm: React.FC<UserFormProps> = ({
                   type="email"
                   placeholder="user@company.ru"
                   defaultValue={defaultValues?.email}
+                  disabled={!canEdit}
                   {...field}
                   required
                 />
@@ -78,6 +88,7 @@ const UserForm: React.FC<UserFormProps> = ({
                 <Input
                   placeholder="Введите штрихкод"
                   defaultValue={defaultValues?.barcode}
+                  disabled={!canEdit}
                   {...field}
                 />
               </FormControl>
@@ -94,6 +105,7 @@ const UserForm: React.FC<UserFormProps> = ({
                 <Input
                   placeholder="Введите логин"
                   defaultValue={defaultValues?.login}
+                  disabled={!canEdit}
                   {...field}
                 />
               </FormControl>
@@ -111,6 +123,7 @@ const UserForm: React.FC<UserFormProps> = ({
                   type="password"
                   placeholder="Введите пароль"
                   defaultValue={defaultValues?.password}
+                  disabled={!canEdit}
                   {...field}
                 />
               </FormControl>
@@ -126,6 +139,7 @@ const UserForm: React.FC<UserFormProps> = ({
               <Select
                 onValueChange={field.onChange}
                 defaultValue={defaultValues?.department || field.value}
+                disabled={!canEdit}
                 required
               >
                 <FormControl>
@@ -152,6 +166,7 @@ const UserForm: React.FC<UserFormProps> = ({
               <Select
                 onValueChange={field.onChange}
                 defaultValue={defaultValues?.role || field.value}
+                disabled={!canEdit}
                 required
               >
                 <FormControl>
@@ -178,6 +193,7 @@ const UserForm: React.FC<UserFormProps> = ({
                 <Select
                   onValueChange={field.onChange}
                   defaultValue={defaultValues.status}
+                  disabled={!canEdit}
                 >
                   <FormControl>
                     <SelectTrigger>
@@ -194,9 +210,33 @@ const UserForm: React.FC<UserFormProps> = ({
           />
         )}
 
-        <Button type="submit" className="w-full">
-          {submitText}
-        </Button>
+        <FormField
+          name="faceId"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Face ID</FormLabel>
+              <FormControl>
+                <Input
+                  placeholder="Идентификатор Face ID"
+                  defaultValue={defaultValues?.faceId}
+                  disabled={!canEdit}
+                  {...field}
+                />
+              </FormControl>
+            </FormItem>
+          )}
+        />
+
+        {canEdit && (
+          <Button type="submit" className="w-full">
+            {submitText}
+          </Button>
+        )}
+        {!canEdit && (
+          <div className="text-center text-gray-500 py-4">
+            Только менеджеры могут редактировать данные пользователей
+          </div>
+        )}
       </form>
     </Form>
   );

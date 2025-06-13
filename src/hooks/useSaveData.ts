@@ -4,13 +4,14 @@ export interface User {
   id: string;
   name: string;
   email: string;
-  department: string;
-  role: "admin" | "manager" | "employee";
-  status: "active" | "inactive";
-  keysIssued: number;
   barcode?: string;
   login?: string;
   password?: string;
+  department: string;
+  role: "employee" | "manager" | "admin";
+  status: "active" | "inactive";
+  keysIssued: number;
+  faceId?: string; // Новое поле для Face ID
 }
 
 export interface KeyRecord {

@@ -11,6 +11,11 @@ const Dashboard = () => {
   const users = loadUsers();
   const keys = loadKeys();
 
+  // Проверяем роль пользователя
+  const currentUser = JSON.parse(localStorage.getItem("current_user") || "{}");
+  const userRole = currentUser.role;
+  const isManager = userRole === "manager" || userRole === "admin";
+
   // Вычисляем статистику
   const totalKeys = keys.length;
   const issuedToday = keys.filter((key) => {
@@ -59,56 +64,62 @@ const Dashboard = () => {
             icon="TrendingUp"
             color="success"
           />
-          <StatCard
-            title="Активных пользователей"
-            value={activeUsers}
-            icon="Users"
-            color="primary"
-          />
-          <StatCard
-            title="Утерянных ключей"
-            value={lostKeys}
-            icon="AlertTriangle"
-            color="warning"
-          />
+          {isManager && (
+            <StatCard
+              title="Активных пользователей"
+              value={activeUsers}
+              icon="Users"
+              color="primary"
+            />
+          )}
+          {isManager && (
+            <StatCard
+              title="Утерянных ключей"
+              value={lostKeys}
+              icon="AlertTriangle"
+              color="warning"
+            />
+          )}
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <RecentActivity />
 
-          <div className="bg-white rounded-lg border p-6">
-            <h3 className="text-lg font-semibold mb-4">
-              Статистика по отделам
-            </h3>
-            <div className="space-y-3">
-              {Object.entries(departmentStats).map(([department, stats]) => (
-                <div
-                  key={department}
-                  className="flex justify-between items-center"
-                >
-                  <span className="text-sm text-gray-600">{department}</span>
-                  <div className="flex items-center space-x-2">
-                    <div className="w-24 bg-gray-200 rounded-full h-2">
-                      <div
-                        className="bg-primary h-2 rounded-full"
-                        style={{
-                          width: `${(stats.active / stats.total) * 100}%`,
-                        }}
-                      ></div>
+          {isManager && (
+            <div className="bg-white rounded-lg border p-6">
+              <h3 className="text-lg font-semibold mb-4">
+                Статистика по отделам
+              </h3>
+              <div className="space-y-3">
+                {Object.entries(departmentStats).map(([department, stats]) => (
+                  <div
+                    key={department}
+                    className="flex justify-between items-center"
+                  >
+                    <span className="text-sm text-gray-600">{department}</span>
+                    <div className="flex items-center space-x-2">
+                      <div className="w-24 bg-gray-200 rounded-full h-2">
+                        <div
+                          className="bg-primary h-2 rounded-full"
+                          style={{
+                            width: `${(stats.active / stats.total) * 100}%`,
+                          }}
+                        ></div>
+                      </div>
+                      <span className="text-sm font-medium">
+                        {stats.active}/{stats.total}
+                      </span>
                     </div>
-                    <span className="text-sm font-medium">
-                      {stats.active}/{stats.total}
-                    </span>
                   </div>
-                </div>
-              ))}
-              {Object.keys(departmentStats).length === 0 && (
-                <div className="text-center text-gray-500 py-4">
-                  Нет данных по отделам
-                </div>
-              )}
+                ))}
+                {Object.keys(departmentStats).length === 0 && (
+                  <div className="text-center text-gray-500 py-4">
+                    Нет данных по отделам
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
     </div>

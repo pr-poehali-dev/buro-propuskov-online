@@ -16,12 +16,14 @@ interface UserTableProps {
   users: User[];
   onEditUser: (user: User) => void;
   onDeleteUser: (userId: string) => void;
+  isManager?: boolean; // Добавляем проп для проверки роли
 }
 
 const UserTable: React.FC<UserTableProps> = ({
   users,
   onEditUser,
   onDeleteUser,
+  isManager = false,
 }) => {
   return (
     <Card>
@@ -43,6 +45,7 @@ const UserTable: React.FC<UserTableProps> = ({
               <TableHead>Отдел</TableHead>
               <TableHead>Роль</TableHead>
               <TableHead>Статус</TableHead>
+              <TableHead>Face ID</TableHead>
               <TableHead>Ключи</TableHead>
               <TableHead>Действия</TableHead>
             </TableRow>
@@ -54,6 +57,7 @@ const UserTable: React.FC<UserTableProps> = ({
                 user={user}
                 onEdit={onEditUser}
                 onDelete={onDeleteUser}
+                isManager={isManager}
               />
             ))}
           </TableBody>
