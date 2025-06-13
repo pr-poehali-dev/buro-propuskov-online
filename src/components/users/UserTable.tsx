@@ -47,7 +47,7 @@ const UserTable: React.FC<UserTableProps> = ({
               <TableHead>Статус</TableHead>
               <TableHead>Face ID</TableHead>
               <TableHead>Ключи</TableHead>
-              <TableHead>Действия</TableHead>
+              {isManager && <TableHead>Действия</TableHead>}
             </TableRow>
           </TableHeader>
           <TableBody>

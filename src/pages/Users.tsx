@@ -67,6 +67,13 @@ const Users = () => {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 
+  // Проверяем роль текущего пользователя
+  const currentUser = JSON.parse(
+    localStorage.getItem("current_user") || '{"role": "employee"}',
+  );
+  const isManager =
+    currentUser.role === "manager" || currentUser.role === "admin";
+
   const createForm = useForm<User>();
   const editForm = useForm<User>();
 
@@ -135,21 +142,25 @@ const Users = () => {
               isSaving={isSaving}
               lastSaved={lastSaved}
             />
-            <UserFormDialog
-              open={isCreateDialogOpen}
-              onOpenChange={setIsCreateDialogOpen}
-              title="Создать нового пользователя"
-              form={createForm}
-              onSubmit={createUser}
-              submitText="Создать пользователя"
-            />
-            <Button
-              className="flex items-center space-x-2"
-              onClick={() => setIsCreateDialogOpen(true)}
-            >
-              <Icon name="UserPlus" size={16} />
-              <span>Добавить пользователя</span>
-            </Button>
+            {isManager && (
+              <>
+                <UserFormDialog
+                  open={isCreateDialogOpen}
+                  onOpenChange={setIsCreateDialogOpen}
+                  title="Создать нового пользователя"
+                  form={createForm}
+                  onSubmit={createUser}
+                  submitText="Создать пользователя"
+                />
+                <Button
+                  className="flex items-center space-x-2"
+                  onClick={() => setIsCreateDialogOpen(true)}
+                >
+                  <Icon name="UserPlus" size={16} />
+                  <span>Добавить пользователя</span>
+                </Button>
+              </>
+            )}
           </div>
         </div>
 
@@ -169,6 +180,7 @@ const Users = () => {
           users={users}
           onEditUser={editUser}
           onDeleteUser={deleteUser}
+          isManager={isManager}
         />
       </div>
     </div>
