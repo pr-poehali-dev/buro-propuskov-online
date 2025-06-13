@@ -41,36 +41,40 @@ import {
 import Icon from "@/components/ui/icon";
 
 const KeyManagement: React.FC = () => {
-  const [keys, setKeys] = useState<KeyRecord[]>([
-    {
-      id: "1",
-      office: "301",
-      status: "issued",
-      issuedTo: "Иванов И.И.",
-      issuedAt: "2024-01-15",
-      department: "IT",
-    },
-    { id: "2", office: "302", status: "available", department: "IT" },
-    {
-      id: "3",
-      office: "205",
-      status: "issued",
-      issuedTo: "Петрова А.С.",
-      issuedAt: "2024-01-10",
-      department: "Бухгалтерия",
-    },
-    { id: "4", office: "410", status: "available", department: "HR" },
-    { id: "5", office: "101", status: "lost", department: "Охрана" },
-  ]);
+  const [keys, setKeys] = useState<KeyRecord[]>(() => {
+    const savedKeys = localStorage.getItem("keys_data");
+    return savedKeys
+      ? JSON.parse(savedKeys)
+      : [
+          {
+            id: "1",
+            office: "301",
+            status: "issued",
+            issuedTo: "Иванов И.И.",
+            issuedAt: "2024-01-15",
+            department: "IT",
+          },
+          { id: "2", office: "302", status: "available", department: "IT" },
+          {
+            id: "3",
+            office: "205",
+            status: "issued",
+            issuedTo: "Петрова А.С.",
+            issuedAt: "2024-01-10",
+            department: "Бухгалтерия",
+          },
+          { id: "4", office: "410", status: "available", department: "HR" },
+          { id: "5", office: "101", status: "lost", department: "Охрана" },
+        ];
+  });
 
   const { isSaving, lastSaved, saveKeys } = useSaveData();
 
   const deleteKey = (keyId: string) => {
     const updatedKeys = keys.filter((key) => key.id !== keyId);
     setKeys(updatedKeys);
-    // Также удаляем из localStorage
-    const { deleteKey: deleteKeyFromStorage } = useSaveData();
-    deleteKeyFromStorage(keyId);
+    // Сразу сохраняем в localStorage
+    localStorage.setItem("keys_data", JSON.stringify(updatedKeys));
   };
 
   const [filterStatus, setFilterStatus] = useState<string>("all");
@@ -96,7 +100,10 @@ const KeyManagement: React.FC = () => {
       department: departmentLabels[newKeyDepartment],
     };
 
-    setKeys((prev) => [...prev, newKey]);
+    const updatedKeys = [...keys, newKey];
+    setKeys(updatedKeys);
+    // Сразу сохраняем в localStorage
+    localStorage.setItem("keys_data", JSON.stringify(updatedKeys));
     setNewKeyOffice("");
     setNewKeyDepartment("");
     setIsDialogOpen(false);
