@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Navigation from "@/components/layout/Navigation";
 import { Button } from "@/components/ui/button";
-import { DialogTrigger } from "@/components/ui/dialog";
+
 import Icon from "@/components/ui/icon";
 import SaveButton from "@/components/ui/SaveButton";
 import { useForm } from "react-hook-form";
@@ -61,13 +61,20 @@ const Users = () => {
     },
   ]);
 
-  const { isSaving, lastSaved, saveUsers } = useSaveData();
+  const { isSaving, lastSaved, saveUsers, loadUsers } = useSaveData();
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 
-  const createForm = useForm();
-  const editForm = useForm();
+  const createForm = useForm<User>();
+  const editForm = useForm<User>();
+
+  useEffect(() => {
+    const savedUsers = loadUsers();
+    if (savedUsers.length > 0) {
+      setUsers(savedUsers);
+    }
+  }, []);
 
   const deleteUser = (userId: string) => {
     const updatedUsers = users.filter((user) => user.id !== userId);
@@ -76,22 +83,16 @@ const Users = () => {
 
   const editUser = (user: User) => {
     setEditingUser(user);
+    editForm.reset(user);
     setIsEditDialogOpen(true);
   };
 
-  const updateUser = (data: any) => {
+  const updateUser = (data: User) => {
     if (!editingUser) return;
 
     const updatedUser: User = {
       ...editingUser,
-      name: data.name || editingUser.name,
-      email: data.email || editingUser.email,
-      department: data.department || editingUser.department,
-      role: data.role || editingUser.role,
-      status: data.status || editingUser.status,
-      barcode: data.barcode || editingUser.barcode,
-      login: data.login || editingUser.login,
-      password: data.password || editingUser.password,
+      ...data,
     };
 
     setUsers(
@@ -99,9 +100,10 @@ const Users = () => {
     );
     setIsEditDialogOpen(false);
     setEditingUser(null);
+    editForm.reset();
   };
 
-  const createUser = (data: any) => {
+  const createUser = (data: User) => {
     const newUser: User = {
       ...data,
       id: Date.now().toString(),
@@ -140,15 +142,13 @@ const Users = () => {
               onSubmit={createUser}
               submitText="Создать пользователя"
             />
-            <DialogTrigger asChild>
-              <Button
-                className="flex items-center space-x-2"
-                onClick={() => setIsCreateDialogOpen(true)}
-              >
-                <Icon name="UserPlus" size={16} />
-                <span>Добавить пользователя</span>
-              </Button>
-            </DialogTrigger>
+            <Button
+              className="flex items-center space-x-2"
+              onClick={() => setIsCreateDialogOpen(true)}
+            >
+              <Icon name="UserPlus" size={16} />
+              <span>Добавить пользователя</span>
+            </Button>
           </div>
         </div>
 
