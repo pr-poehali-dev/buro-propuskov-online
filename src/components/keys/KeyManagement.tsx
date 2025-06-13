@@ -162,7 +162,8 @@ const KeyManagement: React.FC<KeyManagementProps> = ({ isManager = false }) => {
 
   // Проверяем роль пользователя
   const currentUser = JSON.parse(localStorage.getItem("current_user") || "{}");
-  const isManager = currentUser.role === "manager";
+  const userIsManager = currentUser.role === "manager";
+  const finalIsManager = isManager || userIsManager;
 
   const stats = {
     total: keys.length,
@@ -265,18 +266,18 @@ const KeyManagement: React.FC<KeyManagementProps> = ({ isManager = false }) => {
             <CardTitle className="flex items-center space-x-2">
               <Icon name="Key" size={20} />
               <span>
-                {isManager ? "Выдача ключей и карт" : "Управление ключами"}
+                {finalIsManager ? "Выдача ключей и карт" : "Управление ключами"}
               </span>
             </CardTitle>
             <div className="flex items-center space-x-4">
-              {!isManager && (
+              {!finalIsManager && (
                 <SaveButton
                   onSave={() => saveKeys(keys)}
                   isSaving={isSaving}
                   lastSaved={lastSaved}
                 />
               )}
-              {!isManager && (
+              {!finalIsManager && (
                 <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                   <DialogTrigger asChild>
                     <Button className="flex items-center space-x-2">
@@ -401,7 +402,7 @@ const KeyManagement: React.FC<KeyManagementProps> = ({ isManager = false }) => {
                           <Icon name="RotateCcw" size={14} />
                         </Button>
                       )}
-                      {!isManager && (
+                      {!finalIsManager && (
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
                             <Button size="sm" variant="destructive">
