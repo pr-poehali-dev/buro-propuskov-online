@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import SaveButton from "@/components/ui/SaveButton";
+import { useSaveData, KeyRecord } from "@/hooks/useSaveData";
 import {
   Table,
   TableBody,
@@ -38,15 +40,6 @@ import {
 } from "@/components/ui/select";
 import Icon from "@/components/ui/icon";
 
-interface KeyRecord {
-  id: string;
-  office: string;
-  status: "available" | "issued" | "lost";
-  issuedTo?: string;
-  issuedAt?: string;
-  department: string;
-}
-
 const KeyManagement: React.FC = () => {
   const [keys, setKeys] = useState<KeyRecord[]>([
     {
@@ -69,6 +62,8 @@ const KeyManagement: React.FC = () => {
     { id: "4", office: "410", status: "available", department: "HR" },
     { id: "5", office: "101", status: "lost", department: "Охрана" },
   ]);
+
+  const { isSaving, lastSaved, saveKeys } = useSaveData();
 
   const deleteKey = (keyId: string) => {
     setKeys(keys.filter((key) => key.id !== keyId));
@@ -198,47 +193,54 @@ const KeyManagement: React.FC = () => {
               <Icon name="Key" size={20} />
               <span>Управление ключами</span>
             </CardTitle>
-            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-              <DialogTrigger asChild>
-                <Button className="flex items-center space-x-2">
-                  <Icon name="Plus" size={16} />
-                  <span>Добавить ключ</span>
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Добавить новый ключ</DialogTitle>
-                </DialogHeader>
-                <div className="space-y-4">
-                  <Input
-                    placeholder="Номер кабинета"
-                    value={newKeyOffice}
-                    onChange={(e) => setNewKeyOffice(e.target.value)}
-                  />
-                  <Select
-                    value={newKeyDepartment}
-                    onValueChange={setNewKeyDepartment}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Выберите отдел" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="it">IT-отдел</SelectItem>
-                      <SelectItem value="hr">HR</SelectItem>
-                      <SelectItem value="accounting">Бухгалтерия</SelectItem>
-                      <SelectItem value="security">Охрана</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <Button
-                    className="w-full"
-                    onClick={addKey}
-                    disabled={!newKeyOffice.trim() || !newKeyDepartment}
-                  >
-                    Добавить ключ
+            <div className="flex items-center space-x-4">
+              <SaveButton
+                onSave={() => saveKeys(keys)}
+                isSaving={isSaving}
+                lastSaved={lastSaved}
+              />
+              <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button className="flex items-center space-x-2">
+                    <Icon name="Plus" size={16} />
+                    <span>Добавить ключ</span>
                   </Button>
-                </div>
-              </DialogContent>
-            </Dialog>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Добавить новый ключ</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <Input
+                      placeholder="Номер кабинета"
+                      value={newKeyOffice}
+                      onChange={(e) => setNewKeyOffice(e.target.value)}
+                    />
+                    <Select
+                      value={newKeyDepartment}
+                      onValueChange={setNewKeyDepartment}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Выберите отдел" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="it">IT-отдел</SelectItem>
+                        <SelectItem value="hr">HR</SelectItem>
+                        <SelectItem value="accounting">Бухгалтерия</SelectItem>
+                        <SelectItem value="security">Охрана</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Button
+                      className="w-full"
+                      onClick={addKey}
+                      disabled={!newKeyOffice.trim() || !newKeyDepartment}
+                    >
+                      Добавить ключ
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            </div>
           </div>
         </CardHeader>
         <CardContent>

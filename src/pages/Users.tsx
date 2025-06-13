@@ -45,17 +45,9 @@ import {
   FormLabel,
 } from "@/components/ui/form";
 import Icon from "@/components/ui/icon";
+import SaveButton from "@/components/ui/SaveButton";
 import { useForm } from "react-hook-form";
-
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  department: string;
-  role: "admin" | "manager" | "employee";
-  status: "active" | "inactive";
-  keysIssued: number;
-}
+import { useSaveData, User } from "@/hooks/useSaveData";
 
 const Users = () => {
   const [users, setUsers] = useState<User[]>([
@@ -96,6 +88,8 @@ const Users = () => {
       keysIssued: 1,
     },
   ]);
+
+  const { isSaving, lastSaved, saveUsers } = useSaveData();
 
   const deleteUser = (userId: string) => {
     setUsers(users.filter((user) => user.id !== userId));
@@ -150,101 +144,115 @@ const Users = () => {
               Создание и управление учетными записями сотрудников
             </p>
           </div>
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button className="flex items-center space-x-2">
-                <Icon name="UserPlus" size={16} />
-                <span>Добавить пользователя</span>
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-md">
-              <DialogHeader>
-                <DialogTitle>Создать нового пользователя</DialogTitle>
-              </DialogHeader>
-              <Form {...form}>
-                <form className="space-y-4">
-                  <FormField
-                    name="name"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>ФИО</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Введите полное имя" {...field} />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    name="email"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Email</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="email"
-                            placeholder="user@company.ru"
-                            {...field}
-                          />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    name="department"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Отдел</FormLabel>
-                        <Select
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                        >
+          <div className="flex items-center space-x-4">
+            <SaveButton
+              onSave={() => saveUsers(users)}
+              isSaving={isSaving}
+              lastSaved={lastSaved}
+            />
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button className="flex items-center space-x-2">
+                  <Icon name="UserPlus" size={16} />
+                  <span>Добавить пользователя</span>
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-md">
+                <DialogHeader>
+                  <DialogTitle>Создать нового пользователя</DialogTitle>
+                </DialogHeader>
+                <Form {...form}>
+                  <form className="space-y-4">
+                    <FormField
+                      name="name"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>ФИО</FormLabel>
                           <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Выберите отдел" />
-                            </SelectTrigger>
+                            <Input
+                              placeholder="Введите полное имя"
+                              {...field}
+                            />
                           </FormControl>
-                          <SelectContent>
-                            <SelectItem value="it">IT-отдел</SelectItem>
-                            <SelectItem value="hr">HR</SelectItem>
-                            <SelectItem value="accounting">
-                              Бухгалтерия
-                            </SelectItem>
-                            <SelectItem value="security">Охрана</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    name="role"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Роль</FormLabel>
-                        <Select
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                        >
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      name="email"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Email</FormLabel>
                           <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Выберите роль" />
-                            </SelectTrigger>
+                            <Input
+                              type="email"
+                              placeholder="user@company.ru"
+                              {...field}
+                            />
                           </FormControl>
-                          <SelectContent>
-                            <SelectItem value="employee">Сотрудник</SelectItem>
-                            <SelectItem value="manager">Менеджер</SelectItem>
-                            <SelectItem value="admin">Администратор</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </FormItem>
-                    )}
-                  />
-                  <Button type="submit" className="w-full">
-                    Создать пользователя
-                  </Button>
-                </form>
-              </Form>
-            </DialogContent>
-          </Dialog>
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      name="department"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Отдел</FormLabel>
+                          <Select
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Выберите отдел" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="it">IT-отдел</SelectItem>
+                              <SelectItem value="hr">HR</SelectItem>
+                              <SelectItem value="accounting">
+                                Бухгалтерия
+                              </SelectItem>
+                              <SelectItem value="security">Охрана</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      name="role"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Роль</FormLabel>
+                          <Select
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Выберите роль" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="employee">
+                                Сотрудник
+                              </SelectItem>
+                              <SelectItem value="manager">Менеджер</SelectItem>
+                              <SelectItem value="admin">
+                                Администратор
+                              </SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </FormItem>
+                      )}
+                    />
+                    <Button type="submit" className="w-full">
+                      Создать пользователя
+                    </Button>
+                  </form>
+                </Form>
+              </DialogContent>
+            </Dialog>
+          </div>
         </div>
 
         <Card>
