@@ -15,7 +15,11 @@ const Keys = () => {
             Выдача, возврат и учет ключей от кабинетов
           </p>
         </div>
-        <KeyManagement />
+        <KeyManagement
+          userRole={
+            JSON.parse(localStorage.getItem("current_user") || "{}").role
+          }
+        />
       </div>
     </div>
   );

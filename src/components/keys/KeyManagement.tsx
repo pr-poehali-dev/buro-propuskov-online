@@ -41,10 +41,12 @@ import {
 import Icon from "@/components/ui/icon";
 
 interface KeyManagementProps {
-  isManager?: boolean;
+  userRole?: string;
 }
 
-const KeyManagement: React.FC<KeyManagementProps> = ({ isManager = false }) => {
+const KeyManagement: React.FC<KeyManagementProps> = ({
+  userRole = "employee",
+}) => {
   const [keys, setKeys] = useState<KeyRecord[]>(() => {
     const savedKeys = localStorage.getItem("keys_data");
     return savedKeys
@@ -161,9 +163,7 @@ const KeyManagement: React.FC<KeyManagementProps> = ({ isManager = false }) => {
   });
 
   // Проверяем роль пользователя
-  const currentUser = JSON.parse(localStorage.getItem("current_user") || "{}");
-  const userIsManager = currentUser.role === "manager";
-  const finalIsManager = isManager || userIsManager;
+  const isManager = userRole === "manager";
 
   const stats = {
     total: keys.length,
@@ -266,18 +266,18 @@ const KeyManagement: React.FC<KeyManagementProps> = ({ isManager = false }) => {
             <CardTitle className="flex items-center space-x-2">
               <Icon name="Key" size={20} />
               <span>
-                {finalIsManager ? "Выдача ключей и карт" : "Управление ключами"}
+                {isManager ? "Управление ключами" : "Выдача ключей и карт"}
               </span>
             </CardTitle>
             <div className="flex items-center space-x-4">
-              {!finalIsManager && (
+              {isManager && (
                 <SaveButton
                   onSave={() => saveKeys(keys)}
                   isSaving={isSaving}
                   lastSaved={lastSaved}
                 />
               )}
-              {!finalIsManager && (
+              {isManager && (
                 <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                   <DialogTrigger asChild>
                     <Button className="flex items-center space-x-2">
@@ -402,7 +402,7 @@ const KeyManagement: React.FC<KeyManagementProps> = ({ isManager = false }) => {
                           <Icon name="RotateCcw" size={14} />
                         </Button>
                       )}
-                      {!finalIsManager && (
+                      {isManager && (
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
                             <Button size="sm" variant="destructive">
