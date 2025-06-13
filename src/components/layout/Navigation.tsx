@@ -2,9 +2,15 @@ import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import Icon from "@/components/ui/icon";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Navigation = () => {
   const location = useLocation();
+  const { currentUser, logout } = useAuth();
+
+  if (!currentUser) {
+    return null;
+  }
 
   const navItems = [
     { path: "/", label: "Дашборд", icon: "BarChart3" },
@@ -42,7 +48,12 @@ const Navigation = () => {
 
         <div className="flex items-center space-x-2">
           <Icon name="User" className="text-gray-600" size={20} />
-          <span className="text-sm text-gray-600">Администратор</span>
+          <span className="text-sm text-gray-600">
+            {currentUser?.name || "Пользователь"}
+          </span>
+          <Button variant="ghost" size="sm" onClick={logout} className="ml-2">
+            <Icon name="LogOut" size={16} />
+          </Button>
         </div>
       </div>
     </nav>
